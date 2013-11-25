@@ -22,20 +22,64 @@ namespace Microsoft.Phone.Tasks
 
     public class BingMapsDirectionsTask
     {
-        internal LabeledMapLocation Start { get; set; }
+        public LabeledMapLocation Start { get; set; }
 
-        internal LabeledMapLocation End { get; set; }
+        public LabeledMapLocation End { get; set; }
 
-        internal void Show()
+        public async void Show()
         {
-            throw new NotImplementedException();
+            if (Start == null && End == null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            var start = default(string);
+            if (Start.Location != null)
+            {
+                start = string.Format("pos.{0}_{1}", Start.Location.Latitude, Start.Location.Longitude);
+            }
+            else
+            {
+                start = string.Format("adr.{0}", Uri.EscapeDataString(Start.Label));
+            }
+
+            var end = default(string);
+            if (End.Location != null)
+            {
+                end = string.Format("pos.{0}_{1}", End.Location.Latitude, End.Location.Longitude);
+            }
+            else
+            {
+                end = string.Format("adr.{0}", Uri.EscapeDataString(End.Label));
+            }
+
+            var url = string.Format("bingmaps:?rtp={0}~{1}", start, end);
+            await Launcher.LaunchUriAsync(new Uri(url));
         }
     }
 
-    class LabeledMapLocation
+    public class LabeledMapLocation
     {
         private string p;
         private System.Device.Location.GeoCoordinate geoCoordinate;
+
+        /// <summary>
+        /// Gets or sets the text label that identifies the associated geographic location.
+        /// </summary>
+        public string Label 
+        { 
+            set { p = value; } 
+            get { return p; } 
+        }
+        
+        /// <summary>
+        /// Gets or sets the geographic coordinate associated with a labeled map location.
+        /// </summary>
+        public System.Device.Location.GeoCoordinate Location
+        { 
+            set { geoCoordinate = value; } 
+            get { return geoCoordinate; } 
+        }
 
         public LabeledMapLocation(string p, System.Device.Location.GeoCoordinate geoCoordinate)
         {
